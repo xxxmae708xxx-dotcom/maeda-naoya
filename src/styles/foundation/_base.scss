@@ -1,0 +1,21 @@
+@layer foundation {
+    :where(body) {
+        background-color: var(--color-bg-base);
+        color: var(--color-text-base);
+    }
+
+
+    // .card {
+    //     background-color: var(--color-bg-surface);
+    //     box-shadow: var(--shadow-elevation-low);
+    //     border: 1px solid var(--color-border-subtle);
+    //     border-radius: 8px;
+    //     z-index: var(--z-base);
+    // }
+
+    // .modal {
+    //     background-color: var(--color-bg-elevated);
+    //     box-shadow: var(--shadow-elevation-high);
+    //     z-index: var(--z-modal);
+    // }
+}

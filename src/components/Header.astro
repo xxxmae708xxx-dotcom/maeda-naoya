@@ -1,0 +1,495 @@
+---
+import { nav_items } from "../data/navigation";
+import HeaderLogo from "../assets/header-logo.svg";
+import ArrowIcon from "../assets/arrow-icon.svg";
+import ColorThemeToggle from "./ColorThemeToggle.astro";
+import Inner from "../layouts/Inner.astro";
+
+interface Props {
+    class?: string;
+    title?: string;
+    href?: string;
+}
+
+const { title = "Site Name", href = "/", class: className } = Astro.props;
+
+const pathname = Astro.url.pathname;
+const isHome = pathname === "/";
+
+// 現在のパス判定（末尾スラッシュを考慮）
+const isCurrent = (itemHref: string) => {
+    const normalize = (p: string) => p.replace(/\/$/, "") || "/";
+    return normalize(pathname) === normalize(itemHref);
+};
+---
+
+<header id="js-header" class:list={[className, "c-header"]} data-state="closed">
+    <Inner class="c-header__inner">
+        <!-- ロゴエリア -->
+        <div class="c-header__logo">
+            {
+                isHome ? (
+                    <h1 class="c-header__logoTitle">
+                        <HeaderLogo width="120" />
+                        <span class="u-visually-hidden">{title}</span>
+                    </h1>
+                ) : (
+                    <a
+                        href={href}
+                        class="c-header__logoLink"
+                        aria-label="トップページへ戻る"
+                    >
+                        <HeaderLogo width="120" />
+                        <span class="u-visually-hidden">{title}</span>
+                    </a>
+                )
+            }
+        </div>
+
+        <button
+            id="js-drawer-open"
+            class="c-header__trigger c-header__trigger--open"
+            aria-controls="js-nav"
+            aria-expanded="false"
+            aria-label="メニューを開く"
+        >
+            <span class="c-header__triggerBar"></span>
+        </button>
+
+        <!-- ナビゲーション（左からスライド） -->
+        <nav id="js-nav" class="c-header__nav" aria-hidden="true">
+            <div class="c-header__navInner">
+                <div class="c-header__navHeader">
+                    <button
+                        id="js-drawer-close"
+                        class="c-header__trigger c-header__trigger--close"
+                        aria-label="メニューを閉じる"
+                    >
+                        <span class="u-visually-hidden">閉じる</span>
+                    </button>
+                </div>
+                <ul class="c-header__navList">
+                    {
+                        nav_items.map((item) => {
+                            const active = isCurrent(item.href);
+                            return (
+                                <li class="c-header__navItem">
+                                    <a
+                                        href={item.href}
+                                        class="c-header__navLink"
+                                        aria-current={
+                                            active ? "page" : undefined
+                                        }
+                                    >
+                                        {item.label}
+                                        <span class="c-header__navLink__icon">
+                                            <ArrowIcon />
+                                        </span>
+                                    </a>
+                                </li>
+                            );
+                        })
+                    }
+                </ul>
+            </div>
+        </nav>
+
+        <div class="c-header__theme">
+            <ColorThemeToggle />
+        </div>
+
+        <!-- 背景オーバーレイ -->
+        <div id="js-overlay" class="c-header__overlay"></div>
+    </Inner>
+</header>
+
+<script>
+    const setupHeader = () => {
+        const header = document.getElementById("js-header");
+        const openBtn = document.getElementById("js-drawer-open");
+        const closeBtn = document.getElementById("js-drawer-close");
+        const nav = document.getElementById("js-nav");
+        const overlay = document.getElementById("js-overlay");
+
+        if (!header || !openBtn || !closeBtn || !nav || !overlay) return;
+
+        /**
+         * メニューの状態を切り替える
+         */
+        const toggleMenu = (isOpen: boolean) => {
+            const isMobile = window.innerWidth < 768;
+
+            header.setAttribute("data-state", isOpen ? "opened" : "closed");
+            openBtn.setAttribute("aria-expanded", String(isOpen));
+            nav.setAttribute("aria-hidden", String(!isOpen));
+
+            if (isOpen) {
+                nav.removeAttribute("inert");
+                if (isMobile) document.body.style.overflow = "hidden";
+                closeBtn.focus();
+            } else {
+                // PC時は inert を付与しない（リンク遷移を有効にするため）
+                if (isMobile) {
+                    nav.setAttribute("inert", "");
+                } else {
+                    nav.removeAttribute("inert");
+                }
+                document.body.style.overflow = "";
+            }
+        };
+
+        // イベント登録
+        openBtn.addEventListener("click", () => toggleMenu(true));
+        closeBtn.addEventListener("click", () => toggleMenu(false));
+        overlay.addEventListener("click", () => toggleMenu(false));
+
+        window.addEventListener("keydown", (e) => {
+            if (
+                e.key === "Escape" &&
+                header.getAttribute("data-state") === "opened"
+            ) {
+                toggleMenu(false);
+                openBtn.focus();
+            }
+        });
+
+        // スクロール時のクラス付与
+        let ticking = false;
+        const updateHeader = () => {
+            header.classList.toggle("is-scroll", window.scrollY > 20);
+            ticking = false;
+        };
+        window.addEventListener(
+            "scroll",
+            () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(updateHeader);
+                    ticking = true;
+                }
+            },
+            { passive: true },
+        );
+
+        // リサイズ監視：PCサイズ時はメニューをリセットして inert を解除
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                if (entry.contentRect.width >= 768) {
+                    toggleMenu(false);
+                    nav.removeAttribute("inert");
+                }
+            }
+        });
+        resizeObserver.observe(document.documentElement);
+
+        // 初期実行
+        if (window.innerWidth >= 768) nav.removeAttribute("inert");
+    };
+
+    setupHeader();
+    document.addEventListener("astro:after-swap", setupHeader);
+</script>
+
+<style is:global lang="scss">
+    @use "/src/styles/global" as g;
+
+    @layer component {
+        .c-header {
+            position: sticky;
+            display: grid;
+            place-items: center;
+            background: transparent;
+            transition:
+                background 0.3s ease,
+                box-shadow 0.3s ease;
+
+            &.is-scroll {
+                background: var(--color-bg-surface, #fff);
+                box-shadow: var(--shadow-elevation-low);
+            }
+        }
+
+        .c-header__inner {
+            display: grid;
+            grid-template-areas: "nav logo theme";
+            grid-template-columns: 1fr auto 1fr;
+            column-gap: g.rem(16);
+            align-items: center;
+        }
+
+        /* --- Logo --- */
+        .c-header__logo {
+            display: grid;
+            justify-content: start;
+            // place-items: center;
+        }
+
+        .c-header__logoTitle,
+        .c-header__logoLink {
+            grid-area: logo;
+            display: grid;
+            place-items: center;
+            color: var(--color-text-base);
+            inline-size: g.rem(90);
+            margin: 0;
+            :global(svg) {
+                inline-size: 100%;
+                block-size: auto;
+            }
+        }
+
+        /* --- Triggers --- */
+        .c-header__trigger {
+            grid-area: nav;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: g.rem(8);
+            color: var(--color-text-base);
+
+            &--open {
+                position: relative;
+                inline-size: g.rem(40);
+                block-size: g.rem(40);
+                .c-header__triggerBar {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    inline-size: g.rem(24);
+                    block-size: 2px;
+                    background: currentColor;
+                    &::before,
+                    &::after {
+                        content: "";
+                        position: absolute;
+                        inline-size: 100%;
+                        block-size: 2px;
+                        background: currentColor;
+                        transition: transform 0.3s;
+                    }
+                    &::before {
+                        top: g.rem(-8);
+                    }
+                    &::after {
+                        top: g.rem(8);
+                    }
+                }
+            }
+
+            &--close {
+                position: relative;
+                inline-size: auto;
+                block-size: var(--header-blockSize);
+                background-color: var(--color-surface-darkest);
+                aspect-ratio: 1;
+                &::before,
+                &::after {
+                    content: "";
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    inline-size: g.rem(24);
+                    block-size: 2px;
+                    background: var(--color-text-on-inverse);
+                }
+                &::before {
+                    transform: translate(-50%, -50%) rotate(45deg);
+                }
+                &::after {
+                    transform: translate(-50%, -50%) rotate(-45deg);
+                }
+            }
+        }
+
+        /* --- Navigation (Mobile / Left Side Drawer) --- */
+        .c-header__nav {
+            position: fixed;
+            inset: 0 auto 0 0;
+            inline-size: min(85%, g.rem(320));
+            background: var(--color-bg-surface);
+            z-index: 110;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+
+            &[aria-hidden="false"] {
+                transform: translateX(0);
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        .c-header__navInner {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .c-header__navHeader {
+            block-size: var(--header-blockSize);
+            display: grid;
+            align-items: center;
+            // justify-content: end;
+            justify-content: start;
+        }
+
+        .c-header__navList {
+            display: flex;
+            flex-direction: column;
+            // gap: g.rem(20);
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .c-header__navItem:first-child {
+            margin-block-start: g.rem(1);
+            border-block-start: g.rem(1) solid var(--color-border-base);
+        }
+        .c-header__navItem {
+            border-block-end: g.rem(1) solid var(--color-border-base);
+        }
+
+        .c-header__navLink {
+            position: relative;
+            display: grid;
+            align-items: center;
+            block-size: 3lh;
+            text-decoration: none;
+            color: var(--color-text-base);
+            text-transform: uppercase;
+            font-size: g.rem(16);
+            font-weight: 500;
+            grid-template-columns: 1fr auto;
+            padding-inline-start: g.rem(32);
+            padding-inline-end: g.rem(24);
+            &::after {
+                display: none;
+            }
+            &[aria-current="page"] {
+                background-color: var(--color-surface-soft);
+            }
+
+            &[aria-current="page"] .c-header__navLink__icon {
+                display: none;
+            }
+        }
+
+        .c-header__navLink__icon {
+            block-size: 1lh;
+            inline-size: auto;
+            aspect-ratio: 8 / 12;
+        }
+
+        .c-header__theme {
+            grid-area: theme;
+            justify-self: end;
+        }
+
+        /* --- Overlay --- */
+        .c-header__overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s ease;
+            z-index: 105;
+        }
+
+        .c-header[data-state="opened"] .c-header__overlay {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* --- Desktop View --- */
+        @media (min-width: 768px) {
+            .c-header__trigger--open,
+            .c-header__navHeader,
+            .c-header__overlay {
+                display: none;
+            }
+
+            .c-header__nav {
+                position: static;
+                inline-size: auto;
+                background: transparent;
+                transform: none;
+                visibility: visible !important;
+                overflow: visible;
+                /* PC時はリンクを常に有効に */
+                pointer-events: auto !important;
+            }
+
+            .c-header__navInner {
+                padding: 0;
+            }
+
+            .c-header__navList {
+                flex-direction: row;
+                gap: g.rem(32);
+            }
+
+            .c-header__navItem:first-child {
+                border-block-start: none;
+            }
+
+            .c-header__navItem {
+                border-block-end: none;
+            }
+
+            .c-header__navLink {
+                position: relative;
+                padding-inline: 0;
+                padding-block-end: g.rem(6);
+                block-size: auto;
+                &::after {
+                    content: "";
+                    display: block;
+                    position: absolute;
+                    inset-inline-start: 50%;
+                    inset-block-end: 0;
+                    inline-size: 100%;
+                    block-size: g.rem(2);
+                    background: var(--color-primary, #007aff);
+                    transform: translateX(-50%) scaleX(0);
+                    transform-origin: center;
+                    transition: transform 0.3s ease;
+                }
+
+                &[aria-current="page"] {
+                    background: none;
+                }
+
+                // ホバーおよびカレント表示
+                &:hover::after,
+                &[aria-current="page"]::after {
+                    transform: translateX(-50%) scaleX(1);
+                }
+
+                // ページロード時のアニメーション
+                &[aria-current="page"]::after {
+                    animation: anim-nav-line 0.8s cubic-bezier(0.22, 1, 0.36, 1)
+                        forwards;
+                }
+            }
+
+            @keyframes anim-nav-line {
+                0% {
+                    transform: translateX(-50%) scaleX(0);
+                }
+                100% {
+                    transform: translateX(-50%) scaleX(1);
+                }
+            }
+
+            .c-header__navLink__icon {
+                display: none;
+            }
+
+            .c-header__logoTitle,
+            .c-header__logoLink {
+                inline-size: g.rem(120);
+            }
+        }
+    }
+</style>

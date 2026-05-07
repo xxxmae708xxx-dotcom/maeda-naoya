@@ -1,0 +1,73 @@
+---
+import { nav_items } from "../data/navigation";
+import Inner from "../layouts/Inner.astro";
+import FooterLogo from "/src/assets/footer-logo.svg";
+
+interface Props {
+    class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<footer class:list={[className, "c-footer"]}>
+    <Inner class="c-footer__inner">
+        <div class="c-footer__logo">
+            <FooterLogo width="100" />
+        </div>
+        <nav class="c-footer__nav">
+            <ul class="c-footer__navList">
+                {
+                    nav_items.map((item) => (
+                        <li>
+                            <a href={item.href}>{item.label}</a>
+                        </li>
+                    ))
+                }
+            </ul>
+        </nav>
+        <p class="c-footer__copy">
+            <small>&copy;Naoya Maeda / Web Creator</small>
+        </p>
+    </Inner>
+</footer>
+
+<style is:global lang="scss">
+    @use "/src/styles/global" as g;
+
+    @layer component {
+        .c-footer {
+            display: flow-root;
+            background-color: var(--color-surface-muted);
+        }
+        .c-footer__inner {
+            display: grid;
+            justify-content: center;
+            row-gap: g.rem(24);
+            margin-block-start: g.rem(32);
+        }
+        .c-footer__logo {
+            inline-size: g.rem(80);
+            justify-self: center;
+            display: grid;
+            justify-content: center;
+        }
+        .c-footer__nav {
+            display: grid;
+            justify-content: center;
+        }
+        .c-footer__navList {
+            display: flex;
+            // flex-direction: column;
+            gap: g.rem(24);
+            text-align: center;
+        }
+        .c-footer__copy {
+            text-align: center;
+            padding-block: g.rem(12);
+            background-color: var(--color-surface-dark);
+            color: var(--color-text-rev);
+            inline-size: 100dvi;
+            margin-inline-start: calc(50% - 50dvi);
+        }
+    }
+</style>

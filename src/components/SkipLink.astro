@@ -1,0 +1,38 @@
+---
+
+---
+
+<a href="#mainContents" class="skipLink">メインコンテンツへスキップ</a>
+
+<style lang="scss">
+    @layer component {
+        .skipLink {
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            transform: translateY(-120%);
+            transition: transform 0.2s ease;
+
+            background: #000;
+            color: #fff;
+            padding: 0.75rem 1rem;
+
+            z-index: 999; // ヘッダーより上
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* フォーカスされたら表示 */
+        .skipLink:focus {
+            transform: translateY(0);
+        }
+
+        /* キーボード操作ユーザーにだけ見せる */
+        .skipLink:focus-visible {
+            transform: translateY(0);
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+    }
+</style>

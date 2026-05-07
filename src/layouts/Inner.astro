@@ -1,0 +1,21 @@
+---
+interface Props {
+    class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={["l-inner", className]}><slot /></div>
+
+<style is:global lang="scss">
+    @use "/src/styles/global" as g;
+
+    @layer layout {
+        .l-inner {
+            inline-size: min(100%, g.rem(1200));
+            padding-inline: g.rem(16);
+            margin-inline: auto;
+        }
+    }
+</style>

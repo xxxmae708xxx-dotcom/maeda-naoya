@@ -1,0 +1,68 @@
+@layer theme {
+    :root {
+        color-scheme: light dark;
+
+        /* --- Surface Decorative Scale (背景の装飾的な濃淡 10段階) --- */
+        --color-surface-brightest: light-dark(var(--clr-nl-1000), var(--clr-nd-0));
+        /* 最も明るい装飾面 */
+        --color-surface-bright: light-dark(var(--clr-nl-950), var(--clr-nd-30));
+        /* 明るい装飾面 */
+        --color-surface-soft: light-dark(var(--clr-nl-900), var(--clr-nd-60));
+        /* 柔らかく薄いグレー */
+        --color-surface-pale: light-dark(var(--clr-nl-850), var(--clr-nd-100));
+        /* 標準的な薄いグレー */
+        --color-surface-neutral: light-dark(var(--clr-nl-800), var(--clr-nd-150));
+        /* 中立的なグレー */
+        --color-surface-tinted: light-dark(var(--clr-nl-700), var(--clr-nd-200));
+        /* わずかに濃い装飾 */
+        --color-surface-deep: light-dark(var(--clr-nl-500), var(--clr-nd-500));
+        /* 濃い装飾（フッター等） */
+        --color-surface-darker: light-dark(var(--clr-nl-300), var(--clr-nd-700));
+        /* かなり濃い装飾 */
+        --color-surface-darkest: light-dark(var(--clr-nl-100), var(--clr-nd-850));
+        /* 漆黒に近い（ダーク時は反転） */
+        --color-surface-obsidian: light-dark(var(--clr-nl-0), var(--clr-nd-1000));
+        /* 究極のコントラスト装飾 */
+
+        /* --- Surface Logic (階層・構造) --- */
+        --color-bg-base: light-dark(var(--clr-nl-950), var(--clr-nd-0));
+        --color-bg-surface: light-dark(var(--clr-nl-1000), var(--clr-nd-100));
+        --color-bg-fixed-white: var(--clr-nl-1000);
+
+        /* --- Text Scale (重要度 5段階) --- */
+        --color-text-strong: light-dark(var(--clr-nl-0), var(--clr-nd-1000));
+        /* 見出し */
+        --color-text-base: light-dark(var(--clr-nl-100), var(--clr-nd-900));
+        /* 本文 */
+        --color-text-medium: light-dark(var(--clr-nl-300), var(--clr-nd-700));
+        /* サブテキスト */
+        --color-text-muted: light-dark(var(--clr-nl-500), var(--clr-nd-500));
+        /* 補足 */
+        --color-text-subtle: light-dark(var(--clr-nl-700), var(--clr-nd-300));
+        /* 装飾用 */
+
+        --color-text-on-primary: light-dark(var(--clr-white-fixed), var(--clr-nd-0));
+        --color-text-on-inverse: light-dark(var(--clr-nl-1000), var(--clr-nd-0));
+        --color-text-on-fixed-white: var(--clr-nl-0);
+
+        /* --- Border Scale (4段階) --- */
+        --color-border-faint: light-dark(var(--clr-nl-900), var(--clr-nd-60));
+        --color-border-subtle: light-dark(var(--clr-nl-850), var(--clr-nd-100));
+        --color-border-base: light-dark(var(--clr-nl-700), var(--clr-nd-300));
+        --color-border-strong: light-dark(var(--clr-nl-400), var(--clr-nd-500));
+
+        /* --- Brand / Switch --- */
+        --color-primary: light-dark(var(--clr-sun-500), var(--clr-moon-500));
+        --color-switch-bg: var(--color-primary);
+        --color-switch-thumb: var(--color-bg-fixed-white);
+        --shadow-color: light-dark(oklch(0.1 0.02 70 / 0.1), oklch(0 0 0 / 0.5));
+    }
+
+    :root[data-theme="light"] {
+        color-scheme: light;
+    }
+
+    :root[data-theme="dark"] {
+        color-scheme: dark;
+    }
+}

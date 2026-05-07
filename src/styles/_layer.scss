@@ -1,0 +1,13 @@
+@layer tokens,
+theme,
+foundation,
+layout,
+component,
+project,
+animation,
+utility;
+
+/* ----------------------
+デザイントークンとbaseまではscss外部ファイル参照
+layout以降はastroにインラインスタイルで記述
+---------------------- */

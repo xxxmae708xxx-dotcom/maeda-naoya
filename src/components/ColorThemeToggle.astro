@@ -1,0 +1,133 @@
+---
+interface Props {
+    class?: string;
+}
+
+const { class: className } = Astro.props;
+import LightIcon from "/src/assets/light-icon.svg";
+import DarkIcon from "/src/assets/dark-icon.svg"; // ダーク用を追加
+---
+
+<label
+    for="js-colorThemeToggle"
+    class:list={["c-colorThemeSwitch", className]}
+    aria-label="テーマを切り替える"
+>
+    <button
+        type="button"
+        id="js-colorThemeToggle"
+        role="switch"
+        aria-checked="false"
+        class="c-colorThemeSwitch__button"
+    >
+        <span class="c-colorThemeSwitch__icon">
+            <span class="c-colorThemeSwitch__iconLight" aria-hidden="true"
+                ><LightIcon /></span
+            >
+            <span class="c-colorThemeSwitch__iconDark" aria-hidden="true"
+                ><DarkIcon /></span
+            >
+        </span>
+    </button>
+</label>
+
+<script>
+    // JSロジックは変更なし（属性同期のみ）
+    const initThemeToggle = () => {
+        const themeToggle = document.getElementById("js-colorThemeToggle");
+        const root = document.documentElement;
+        if (!themeToggle) return;
+
+        const syncState = () => {
+            const isDark = root.getAttribute("data-theme") === "dark";
+            themeToggle.setAttribute("aria-checked", isDark ? "true" : "false");
+        };
+
+        syncState();
+
+        themeToggle.addEventListener("click", () => {
+            const isDark = root.getAttribute("data-theme") === "dark";
+            const nextTheme = isDark ? "light" : "dark";
+
+            root.setAttribute("data-theme", nextTheme);
+            localStorage.setItem("theme", nextTheme);
+            syncState();
+        });
+    };
+
+    initThemeToggle();
+    document.addEventListener("astro:after-swap", initThemeToggle);
+</script>
+
+<style lang="scss">
+    @use "/src/styles/global" as g;
+
+    @layer components {
+        .c-colorThemeSwitch {
+            cursor: pointer;
+            color: var(--color-switch-bg);
+            display: grid;
+            align-items: center;
+        }
+
+        .c-colorThemeSwitch__button {
+            all: unset;
+            box-sizing: border-box;
+            position: relative;
+            inline-size: g.rem(56);
+            block-size: g.rem(28);
+            padding: g.rem(2);
+            border-radius: 100vmax;
+            background-color: currentColor;
+            transition:
+                background-color 0.2s,
+                border-color 0.2s;
+            cursor: pointer;
+
+            &:focus-visible {
+                outline: g.rem(2) solid currentColor;
+                outline-offset: g.rem(2);
+            }
+        }
+
+        .c-colorThemeSwitch__icon {
+            display: grid;
+            place-content: center;
+            inline-size: g.rem(24);
+            block-size: g.rem(24);
+            aspect-ratio: 1;
+            /* スイッチ内のアイコン色（light-darkで定義されている前提） */
+            color: var(--color-switch-bg);
+            background-color: var(--color-bg-fixed-white);
+            border-radius: 100vmax;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+            :root[data-theme="dark"] .c-colorThemeSwitch__button & {
+                transform: translateX(g.rem(28));
+            }
+
+            /* アイコン切り替えのCSSロジック */
+            .c-colorThemeSwitch__iconLight {
+                display: block;
+            }
+            .c-colorThemeSwitch__iconDark {
+                display: none;
+            }
+
+            :root[data-theme="dark"] & {
+                .c-colorThemeSwitch__iconLight {
+                    display: none;
+                }
+                .c-colorThemeSwitch__iconDark {
+                    display: block;
+                }
+            }
+
+            :where(svg) {
+                display: block;
+                inline-size: g.rem(14); /* 視認性向上のため微調整（任意） */
+                height: auto;
+            }
+        }
+    }
+</style>

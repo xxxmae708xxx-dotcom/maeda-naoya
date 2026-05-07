@@ -1,5 +1,15 @@
 ---
+// Layout.astro などの head 内で読み込む想定
+import "@fontsource-variable/inter";
+import "@fontsource-variable/noto-sans-jp";
+
+import { ClientRouter } from "astro:transitions";
 import "../styles/_index.scss";
+
+const fontFiles = [
+	"/fonts/inter-variable.woff2",
+	"/fonts/noto-sans-jp-variable.woff2",
+];
 
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -15,16 +25,43 @@ import SkipLink from "../components/SkipLink.astro";
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Astro Basics</title>
+
+		<ClientRouter />
+
+		<!-- ブラウザに最優先でフォントを確保させる -->
+		{
+			fontFiles.map((font) => (
+				<link
+					rel="preload"
+					href={font}
+					as="font"
+					type="font/woff2"
+					crossorigin="anonymous"
+				/>
+			))
+		}
 		<script is:inline>
-			//　即座にテーマを判定して属性を付与（FOUC防止）
-			const theme = (() => {
-				const saved = localStorage.getItem("theme");
-				if (saved) return saved;
-				return window.matchMedia("(prefers-color-scheme: dark)").matches
-					? "dark"
-					: "light";
-			})();
-			document.documentElement.setAttribute("data-theme", theme);
+			/**
+			 * テーマを取得・適用する関数
+			 */
+			const applyTheme = () => {
+				const theme = (() => {
+					const saved = localStorage.getItem("theme");
+					if (saved) return saved;
+					return window.matchMedia("(prefers-color-scheme: dark)")
+						.matches
+						? "dark"
+						: "light";
+				})();
+				document.documentElement.setAttribute("data-theme", theme);
+			};
+
+			// 1. 初回ロード時の適用（FOUC防止）
+			applyTheme();
+
+			// 2. ClientRouter（遷移後）の適用
+			// astro:after-swap は新しいページの DOM に入れ替わった直後に発火します
+			document.addEventListener("astro:after-swap", applyTheme);
 		</script>
 	</head>
 	<body>

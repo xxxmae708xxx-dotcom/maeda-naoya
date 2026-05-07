@@ -18,4 +18,110 @@
     //     box-shadow: var(--shadow-elevation-high);
     //     z-index: var(--z-modal);
     // }
+
+    // src/styles/foundation/_base.scss
+
+    // -------------------------------------------------------------------
+    // 1. Web Font Definitions
+    // -------------------------------------------------------------------
+
+    @font-face {
+        font-family: 'Inter Variable';
+        src: url('/fonts/inter-variable.woff2') format('woff2');
+        font-weight: 100 900;
+        font-display: optional; // 遷移時のガタつき防止に最重要
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Noto Sans JP Variable';
+        src: url('/fonts/noto-sans-jp-variable.woff2') format('woff2');
+        font-weight: 100 900;
+        font-display: optional;
+        font-style: normal;
+    }
+
+    // -------------------------------------------------------------------
+    // 2. Fallback Font Adjustment (CLS対策)
+    // -------------------------------------------------------------------
+    // Webフォント読み込みまでの「身代わり」のサイズを微調整して、レイアウトシフトを防ぐ
+    @font-face {
+        font-family: 'NotoSansFallback';
+        src: local("Hiragino Kaku Gothic ProN"), local("sans-serif");
+        size-adjust: 97%;
+        ascent-override: 93%;
+        descent-override: 25%;
+    }
+
+    // -------------------------------------------------------------------
+    // 3. Global Typography Settings
+    // -------------------------------------------------------------------
+
+    :root {
+        // デザインシステム用変数
+        --font-sans: 'Inter Variable', 'Noto Sans JP Variable', 'NotoSansFallback', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+
+        // 流体タイポグラフィ (clamp)
+        --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+        --text-h1: clamp(2.5rem, 1.5rem + 5vw, 5rem);
+
+        --leading-tight: 1.2;
+        --leading-relaxed: 1.6;
+        --tracking-tight: -0.02em;
+    }
+
+    html {
+        font-family: var(--font-sans);
+        font-size: 16px; // ベースサイズ
+        line-height: var(--leading-relaxed);
+
+        // レンダリング最適化
+        font-synthesis: none; // ブラウザによる不要な合成を禁止
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+
+        // 遷移時のスクロール挙動を滑らかに
+        scroll-behavior: smooth;
+    }
+
+    body {
+        margin: 0;
+        font-size: var(--text-base);
+        color: var(--color-text-base);
+        background-color: var(--color-bg-base);
+    }
+
+    // -------------------------------------------------------------------
+    // 4. Heading Styles
+    // -------------------------------------------------------------------
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin: 0;
+        font-weight: 700;
+        line-height: var(--leading-tight);
+        letter-spacing: var(--tracking-tight);
+
+        // 日本語の改行を美しく（一文字落ちを防ぐ）
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+        // 句読点のぶら下げ
+        hanging-punctuation: allow-end last;
+    }
+
+    // -------------------------------------------------------------------
+    // 5. View Transitions Support
+    // -------------------------------------------------------------------
+
+    // Astroの遷移アニメーション中にフォントがリセットされるのを防ぐ
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        font-family: var(--font-sans) !important;
+    }
 }

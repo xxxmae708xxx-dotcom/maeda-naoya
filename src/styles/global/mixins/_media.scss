@@ -1,0 +1,38 @@
+// _tokens.scss
+$breakpoints: (
+    "sm": 640px,
+    "md": 768px,
+    "lg": 1024px,
+    "xl": 1280px,
+);
+
+// --- min-width (指定サイズ以上) ---
+@mixin mq-min($size) {
+    $width: map-get($breakpoints, $size);
+    $val: if($width, $width, $size);
+
+    @media (min-width: #{$val}) {
+        @content;
+    }
+}
+
+// --- max-width (指定サイズ未満) ---
+// 1px引くことで、境界値でのスタイルの重複を防ぎます
+@mixin mq-max($size) {
+    $width: map-get($breakpoints, $size);
+    $val: if($width, $width, $size);
+
+    @media (max-width: #{$val - 1px}) {
+        @content;
+    }
+}
+
+// --- range (指定サイズ間) ---
+@mixin mq-between($min, $max) {
+    $min-w: map-get($breakpoints, $min);
+    $max-w: map-get($breakpoints, $max);
+
+    @media (min-width: #{$min-w}) and (max-width: #{$max-w - 1px}) {
+        @content;
+    }
+}

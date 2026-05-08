@@ -1,36 +1,82 @@
 ---
-// Layout.astro などの head 内で読み込む想定
+// Layout.astro
 import "@fontsource-variable/inter";
 import "@fontsource-variable/noto-sans-jp";
 
 import { ClientRouter } from "astro:transitions";
 import "../styles/_index.scss";
 
-const fontFiles = [
-	"/fonts/inter-variable.woff2",
-	"/fonts/noto-sans-jp-variable.woff2",
-];
-
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import SkipLink from "../components/SkipLink.astro";
+import { site_config, nav_items, font_files } from "../data/navigation";
+
+interface Props {
+	title?: string;
+	description?: string;
+	ogType?: "website" | "article";
+	image?: string;
+}
+
+// 1. パスに基づいて nav_items から自動取得
+const { pathname } = Astro.url;
+const currentPath = pathname.replace(/\/$/, "") || "/";
+const pageData = nav_items.find((item) => item.href === currentPath);
+
+// 2. 優先順位: Props > navigation.ts(title) > navigation.ts(label)
+const metaTitle = Astro.props.title || pageData?.title || pageData?.label;
+const metaDescription =
+	Astro.props.description || pageData?.description || site_config.description;
+
+const {
+	ogType = currentPath === "/" ? "website" : "article",
+	image = site_config.ogImage,
+} = Astro.props;
+
+// 3. タイトル構造の決定
+const displayTitle =
+	currentPath === "/"
+		? site_config.title
+		: `${metaTitle} | ${site_config.title}`;
+
+const canonicalURL = new URL(Astro.url.pathname, site_config.baseUrl);
+const socialImageURL = new URL(image, site_config.baseUrl);
 ---
 
 <!doctype html>
 <html lang="ja">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+
+		<title>{displayTitle}</title>
+		<meta name="description" content={metaDescription} />
+		<link rel="canonical" href={canonicalURL} />
+
+		<!-- OGP / Social 一元管理 -->
+		<meta property="og:site_name" content={site_config.siteName} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:title" content={displayTitle} />
+		<meta property="og:description" content={metaDescription} />
+		<meta property="og:type" content={ogType} />
+		<meta property="og:image" content={socialImageURL} />
+		<meta property="og:locale" content="ja_JP" />
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content={site_config.twitterId} />
+
+		<!-- Favicon & App Meta -->
+		<meta name="msapplication-TileColor" content={site_config.themeColor} />
+		<meta name="theme-color" content={site_config.themeColor} />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
 		<ClientRouter />
 
-		<!-- ブラウザに最優先でフォントを確保させる -->
+		<!-- フォントのPreload -->
 		{
-			fontFiles.map((font) => (
+			font_files.map((font) => (
 				<link
 					rel="preload"
 					href={font}
@@ -40,10 +86,8 @@ import SkipLink from "../components/SkipLink.astro";
 				/>
 			))
 		}
+
 		<script is:inline>
-			/**
-			 * テーマを取得・適用する関数
-			 */
 			const applyTheme = () => {
 				const theme = (() => {
 					const saved = localStorage.getItem("theme");
@@ -55,12 +99,7 @@ import SkipLink from "../components/SkipLink.astro";
 				})();
 				document.documentElement.setAttribute("data-theme", theme);
 			};
-
-			// 1. 初回ロード時の適用（FOUC防止）
 			applyTheme();
-
-			// 2. ClientRouter（遷移後）の適用
-			// astro:after-swap は新しいページの DOM に入れ替わった直後に発火します
 			document.addEventListener("astro:after-swap", applyTheme);
 		</script>
 	</head>
@@ -77,6 +116,7 @@ import SkipLink from "../components/SkipLink.astro";
 </html>
 
 <style is:global lang="scss">
+	/* 既存のスタイルを維持 */
 	@use "../styles/global" as g;
 
 	@layer layout {

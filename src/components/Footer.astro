@@ -37,7 +37,7 @@ const { class: className } = Astro.props;
     @layer component {
         .c-footer {
             display: flow-root;
-            background-color: var(--color-surface-muted);
+            background-color: var(--color-surface-pale);
         }
         .c-footer__inner {
             display: grid;
@@ -64,8 +64,8 @@ const { class: className } = Astro.props;
         .c-footer__copy {
             text-align: center;
             padding-block: g.rem(12);
-            background-color: var(--color-surface-dark);
-            color: var(--color-text-rev);
+            background-color: var(--color-surface-deep);
+            color: var(--color-text-base);
             inline-size: 100dvi;
             margin-inline-start: calc(50% - 50dvi);
         }

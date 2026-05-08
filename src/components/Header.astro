@@ -230,6 +230,13 @@ const isCurrent = (itemHref: string) => {
             }
         }
 
+        @media (any-hover: hover) {
+            .c-header__logoLink:hover {
+                color: var(--color-primary);
+                transition: color 0.3s ease;
+            }
+        }
+
         /* --- Triggers --- */
         .c-header__trigger {
             background: none;
@@ -310,16 +317,12 @@ const isCurrent = (itemHref: string) => {
                 background: var(--color-bg-surface);
                 z-index: 110;
 
-                // 1. デフォルト（閉じている状態）では transition を "none" にする
-                // これにより、リサイズでSPサイズになった瞬間に「スッ」と動くのを防ぎます
                 transform: translateX(-100%);
                 visibility: hidden;
                 overflow-y: auto;
                 pointer-events: none;
                 transition: none;
 
-                // 2. 開いている時、または「閉じている最中」だけアニメーションを許可する
-                // [aria-hidden] 属性が変化する時だけ動かすための工夫
                 .c-header[data-state="opened"] & {
                     transform: translateX(0);
                     visibility: visible;
@@ -328,16 +331,6 @@ const isCurrent = (itemHref: string) => {
                     transition:
                         transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
                         visibility 0.4s;
-                }
-
-                // 3. 閉じる時のアニメーションを担保
-                // data-state="closed" かつ aria-hidden="true" の時も transition を維持
-                // ただし、これだとリサイズ時に一瞬見える可能性があるため、
-                // より厳密には「JSで開いた後」のみ transition クラスを付与するのが確実ですが、
-                // まずはこの CSS セレクタの調整で試してみてください。
-                &[aria-hidden="true"] {
-                    // ここに transition を書くとリサイズ時にチラつくため、
-                    // 「開いている時」のスタイルから外れた瞬間の戻りアニメーションに任せます
                 }
             }
 
@@ -402,6 +395,11 @@ const isCurrent = (itemHref: string) => {
             text-decoration: none;
             text-transform: uppercase;
             font-weight: 500;
+            @media (any-hover: hover) {
+                &:hover {
+                    color: var(--color-primary);
+                }
+            }
 
             @include g.mq-max("md") {
                 block-size: 3lh;
@@ -430,8 +428,6 @@ const isCurrent = (itemHref: string) => {
                     transform: translateX(-50%) scaleX(0);
                     transition: transform 0.3s ease;
                 }
-
-                &:hover::after,
                 &[aria-current="page"]::after {
                     transform: translateX(-50%) scaleX(1);
                 }
